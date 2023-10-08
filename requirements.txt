@@ -1,0 +1,4 @@
+musical-scales
+pyo
+multiMIDI
+click

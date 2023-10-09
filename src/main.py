@@ -5,14 +5,19 @@ import mingus.midi as midi
 import time
 from mingus.containers import Note
 from mingus.containers import NoteContainer
-from mingus.midi import fluidsynth
-from mingus.midi import pyfluidsynth
-
+import musicalbeeps
+from note import Note
+import mga
+from typing import List
+from melody import Melody
 
 if __name__ == "__main__":
-    c = Note("C")
-    c.velocity =100
-    c.channel =5
-    fluidsynth.init("My_flutes_and_My_voice.sf2")   
-    fluidsynth.play_NoteContainer(NoteContainer(['C', 'E', 'G']))
-    time.sleep(10)
+    player = musicalbeeps.Player(volume = 0.3,
+                            mute_output = False)
+    
+    melody = Melody(4)
+    for note in melody.getMelody():
+        player.play_note(note.getNote(), note.getDuration()*0.5)
+        
+    
+    

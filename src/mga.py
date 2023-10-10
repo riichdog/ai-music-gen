@@ -6,10 +6,11 @@ from typing import List
 from scale import Scales as ScaleMachine
 import numpy as np
 import musicalbeeps
+import matplotlib.pyplot as plt 
 import copy
 scale_machine = ScaleMachine()
 population=[]
-BARS = 8
+BARS = 6
 GENERATIONS = 500
 POPULATION_SIZE =100
 IND_MUTATION_RATE = 0.3
@@ -105,31 +106,34 @@ def crossover(melody1: Melody, melody2: Melody)->Melody:
     # print(f"Melody Child: {str(melodyChild)}\n")
     return melodyChild
 
-
-if __name__ == "__main__":
-    # mel =Melody(4)
-    # print(mel)
-    # print(calculateFitness(mel,"aeolian"))    
+def evolve(scale_used,indy,barCount=None):
     #$GENERATE POPULATION
-    population: List[Melody]= generatePopulation(POPULATION_SIZE ,BARS)
-    scale_used = "aeolian"
-    #$GENERATION LOOP
+    if barCount != None:
+        population: List[Melody]= generatePopulation(POPULATION_SIZE ,BARS)
+    else:
+        population: List[Melody]= generatePopulation(POPULATION_SIZE ,BARS)
+    
+    
     bestMelody = None
     maxFitnessVal=0
     generation_i =0
     best_fitness =0
+    maxFitnessPerGen = []
+    avgFitnessPerGen =[]
+    minFitnessPerGen =[]
+    numGenerationsReq = []
+    #$GENERATION LOOP
     while(best_fitness<0.9):
         generation_i += 1
-    
+        numGenerationsReq.append(generation_i)
     # for generation_i in range(GENERATIONS):
         #$ GET BEST
         population = sorted(population,reverse=True,key= lambda x: calculateFitness(x,scale_used))
-        for count,mel in enumerate(population,0):
-            if(count==0):
-                mel.setElite(True)
-                best_fitness = calculateFitness(mel,scale_used)
-            else:
-                mel.setElite(False)
+        
+        best_fitness = getBestFitness(population,scale_used)
+        maxFitnessPerGen.append(best_fitness)
+        avgFitnessPerGen.append(getAverageFitnes(population,scale_used))
+        minFitnessPerGen.append(getWorstFitness(population,scale_used))
         print(f"Generation: {generation_i} -- Best Fitness: {best_fitness}")
 
         #$ CROSSOVER
@@ -170,11 +174,40 @@ if __name__ == "__main__":
     bestMelody = population[0]
     print(f"BEST MELODY FITNESS {calculateFitness(bestMelody,scale_used)}")
     print(str(bestMelody))
-    player = musicalbeeps.Player(volume = 0.3,
-                            mute_output = False)
+    plotData(numGenerationsReq,maxFitnessPerGen,avgFitnessPerGen,minFitnessPerGen,indy)
+    return bestMelody
+
+def plotData(gens,maxV,avgV,minV,i):
+    plt.plot(gens,maxV,label ="Max Fitness")
+    plt.plot(gens,avgV,label ="Avg Fitness")
+    plt.plot(gens,minV,label ="Min Fitness")
+    plt.legend()
+    plt.savefig(f"data_exports/plot{i}.png")
+    plt.close()
+
+
+def getAverageFitnes(population,scale_used):
+    fitnesses = [calculateFitness(x,scale_used) for x in population]
+    average = sum(fitnesses) / len(fitnesses)
+    return average
+
+def getWorstFitness(population,scale_used):
+    return calculateFitness(population[POPULATION_SIZE-1],scale_used)
+
+def getBestFitness(population,scale_used):
+    best_fitness =0
+    for count,mel in enumerate(population,0):
+            if(count==0):
+                mel.setElite(True)
+                best_fitness = calculateFitness(mel,scale_used)
+            else:
+                mel.setElite(False)
+    return best_fitness
+# if __name__ == "__main__":
+#     # mel =Melody(4)
+#     # print(mel)
+#     # print(calculateFitness(mel,"aeolian"))    
     
     
-    for note in bestMelody.getMelody():
-        player.play_note(note.getNote(), note.getDuration()*0.5)
         
     

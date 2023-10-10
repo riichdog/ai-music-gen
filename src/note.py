@@ -1,6 +1,6 @@
 import mingus.containers as ms
 import random
-
+import math
 class Note:
     def __init__(self,noteString: str,duration: int,octave: int)-> None:
         self.noteString = noteString
@@ -17,7 +17,6 @@ class Note:
         
         self.duration = duration
 
-
     def __str__(self):
         return f"{self.notereturn} duration: {self.duration} beats" 
     def getDuration(self):
@@ -26,11 +25,19 @@ class Note:
         if(self.hasNoteObject):
             return self.noteObject.octave
         return 0
+    def getPitch(self):
+        return self.noteObject.to_hertz()
+    def getMidi(self):
+        # print(self.getNote())
+        # print(self.hasNoteObject)
+        n =  int( ( 12 * math.log(self.getPitch() / 220.0) / math.log(2.0) ) + 57.01 );
+        return n
     def changePitch(self,noteString):
         if(noteString == "pause"):
             self.noteObject = None
             self.hasNoteObject = False
             self.noteReturn = noteString
+            self.noteString = noteString
         else:
             self.hasNoteObject = True
             self.noteObject = ms.Note(noteString,random.randint(4,5)) 
@@ -43,13 +50,15 @@ class Note:
         if(self.hasNoteObject):
             return self.noteObject.name
         return self.noteString
+    
     def formatReturnNote(self):
         if(self.hasNoteObject):
             note_string_pre_format = list(self.noteObject.name)
+            # print(str(note_string_pre_format))
             if(len(note_string_pre_format) > 1):
-                note_string_post_format = note_string_pre_format[0] +str(self.noteObject.octave) + note_string_pre_format[1]
+                note_string_post_format = note_string_pre_format[0] + str(self.noteObject.octave) + note_string_pre_format[1]
             else:
-                note_string_post_format =note_string_pre_format[0] +str(self.noteObject.octave)
+                note_string_post_format =note_string_pre_format[0] + str(self.noteObject.octave)
             return note_string_post_format
         else:
             return self.noteString
